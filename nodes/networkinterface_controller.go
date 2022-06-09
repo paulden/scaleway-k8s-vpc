@@ -79,7 +79,10 @@ func (r *NetworkInterfaceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 
+	log.Info(fmt.Sprintf("MacAddress : %s", nic.Status.MacAddress))
+
 	if nic.Status.MacAddress == "" {
+		log.Info("Pas de MacAddress !")
 		return ctrl.Result{RequeueAfter: time.Second * 1}, nil
 	}
 
@@ -141,6 +144,7 @@ func (r *NetworkInterfaceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, e
 	}
 
 	linkName, err := r.NICs.GetLinkName(nic.Status.MacAddress)
+	log.Info(fmt.Sprintf("linkName : %s", linkName))
 	if err != nil {
 		log.Error(err, "unable to get link")
 		return ctrl.Result{}, err

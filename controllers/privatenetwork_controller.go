@@ -189,11 +189,13 @@ func (r *PrivateNetworkReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			}
 		}
 		if privateNIC == nil {
+			log.Info("Je fais l'appel à l'API pour ajouter le serveur au private network")
 			pnicResp, err := r.InstanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 				Zone:             server.Zone,
 				PrivateNetworkID: pn.Spec.ID,
 				ServerID:         server.ID,
 			})
+			log.Info("J'ai fait l'appel à l'API pour ajouter le serveur au private network")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("unable to create private on server %s", server.ID))
 				return ctrl.Result{RequeueAfter: RequeueDuration}, err
@@ -207,7 +209,9 @@ func (r *PrivateNetworkReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		}
 
 		if len(nicsList.Items) == 0 {
+			log.Info("Je construis l'interface réseau privée pour le node")
 			nic, err := r.constructNetworkInterfaceForPrivateNetwork(pn, node.Name)
+			log.Info("J'ai construit l'interface réseau privée pour le node")
 			if err != nil {
 				log.Error(err, "unable to construct networkInterface from privateNetwork")
 				return ctrl.Result{RequeueAfter: RequeueDuration}, err
@@ -220,6 +224,7 @@ func (r *PrivateNetworkReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 				return ctrl.Result{RequeueAfter: RequeueDuration}, err
 			}
 			patch := client.MergeFrom(nic.DeepCopy())
+			log.Info(fmt.Sprintf("L'adresse MAC est %s", privateNIC.MacAddress))
 			nic.Status.MacAddress = privateNIC.MacAddress
 			err = r.Client.Status().Patch(ctx, nic, patch)
 			if err != nil {
